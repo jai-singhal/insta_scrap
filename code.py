@@ -4,12 +4,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-import xlsxwriter
+from selenium.webdriver.common.keys import Keys
+
+import csv
 import re
 import time
 
-username = "ramavatar000111"
-password = "ramavatar@123"
+username = "ramavtar000112"
+password = "ramavtar@123"
 first_username_to_search = "priya.p.varrier"
 first_userprofile_link = "https://www.instagram.com/priya.p.varrier/"
 
@@ -18,7 +20,7 @@ def login(driver):
     delay = 5 #seconds
     try:
         myElem = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.LINK_TEXT, 'Log in')))
-        print("Page is ready!")
+        print("Login Page is ready!")
     except TimeoutException:
         print("Loading took too much time!\n\n")
         
@@ -43,7 +45,7 @@ def firstInstaProfile(driver):
     follower_xPath = "//a[@href='" + follower_link + "']"
     try:
         myElem = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, follower_xPath)))
-        print("Page is ready!")
+        print(firstInstaProfile + " page is ready!")
     except TimeoutException:
         print("Loading took too much time!\n\n")
 
@@ -56,29 +58,40 @@ def firstInstaProfile(driver):
 
 
 def fetchUsers(driver):
-    users_list = []
-    user = {}
+    csv_output = open('output.csv', 'w')
     
     time.sleep(2)
-        
     html = driver.page_source
     soup = BeautifulSoup(html, "html5lib")
     
+    driver.find_element_by_class_name('_b9n99').click()
+    for i in range(100):    
+        driver.find_element_by_tag_name('body').send_keys(Keys.END)
+        time.sleep(0.2)
+   
+    time.sleep(2)
+    html = driver.page_source
+    soup = BeautifulSoup(html, "html5lib")
+    time.sleep(1)
+    
     for li in soup.find_all("li", class_ = "_6e4x5"):
-        print(li)
-        print("\n\n")
-
-#         scrolling the div
-#         eula = driver.find_element_by_id('eulaFrame')
-#         driver.execute_script('arguments[0].scrollTop = arguments[0].scrollHeight', eula)
+        user = {}
+        user['profile_link'] = li.find_all("a")[0]['href']
+        user['img_src'] = li.find("img")['src']
+        user['username'] = li.find(attrs={"class" : "_2g7d5"}).text
+        user['name'] = li.find(attrs={"class" : "_9mmn5"}).text
+        w = csv.DictWriter(csv_output, user.keys())
+        w.writerow(user)
+        
+    csv_output.close()   
+        
         
         
 driver = webdriver.Chrome()
-
 driver = login(driver)
 driver = firstInstaProfile(driver)
 driver = fetchUsers(driver)
 
 
-# driver.close()
+driver.close()
 print("Successfully scrapped")
