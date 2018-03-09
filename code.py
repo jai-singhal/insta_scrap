@@ -1,3 +1,15 @@
+
+#!/usr/bin/env python
+# code.py
+
+__author__ = "Jai Singhal"
+__copyright__ = "Copyright 2018"
+__version__ = "1.0.1"
+__maintainer__ = "Jai Singhal"
+__email__ = "jaisinghal48@gmail.com"
+__github_repo__ = "https://github.com/jai-singhal/insta_scrap"
+
+
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -17,13 +29,11 @@ def login(driver):
     driver.get('https://www.instagram.com/')
     delay = 5 #seconds
     try:
-        myElem = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.LINK_TEXT, 'Log in')))
+        WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.LINK_TEXT, 'Log in')))
         print("Login Page is ready!")
     except TimeoutException:
         print("Loading took too much time!\n\n")
         
-    html = driver.page_source
-    soup = BeautifulSoup(html, "html5lib")
     ele =  driver.find_element_by_xpath("//a[@href='/accounts/login/']")
     ele.click()
     
@@ -42,13 +52,11 @@ def firstInstaProfile(driver):
     follower_link = "/" + first_username_to_search + '/followers/'
     follower_xPath = "//a[@href='" + follower_link + "']"
     try:
-        myElem = WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, follower_xPath)))
-        print(firstInstaProfile + " page is ready!")
+        WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, follower_xPath)))
+        print(str(first_username_to_search) + " page is ready!")
     except TimeoutException:
         print("Loading took too much time!\n\n")
 
-    html = driver.page_source
-    soup = BeautifulSoup(html, "html5lib")
     ele =  driver.find_element_by_xpath(follower_xPath)
     ele.click()
   
@@ -63,7 +71,7 @@ def fetchUsers(driver):
     soup = BeautifulSoup(html, "html5lib")
     
     driver.find_element_by_class_name('_b9n99').click()
-    for i in range(100):    
+    for _ in range(100):    
         driver.find_element_by_tag_name('body').send_keys(Keys.END)
         time.sleep(0.2)
    
@@ -83,13 +91,18 @@ def fetchUsers(driver):
         
     csv_output.close()   
         
-        
-        
-driver = webdriver.Chrome()
-driver = login(driver)
-driver = firstInstaProfile(driver)
-driver = fetchUsers(driver)
+    return driver 
 
 
-driver.close()
-print("Successfully scrapped")
+def main():       
+    driver = webdriver.Chrome()
+    driver = login(driver)
+    driver = firstInstaProfile(driver)
+    driver = fetchUsers(driver)
+
+    driver.close()
+    print("Successfully scrapped")
+
+
+if __name__ == "__main__":
+    main()
